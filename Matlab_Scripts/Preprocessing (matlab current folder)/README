@@ -22,11 +22,11 @@ Section 2-6 lines 175-259
 Section 7-11 lines 260-344
 
 
-SECTION 1 l1-99
-Input .edf (first two characters of the name should be the pair number (01, 02..20)
+%%%%SECTION 1 l1-99
+%Input .edf (first two characters of the name should be the pair number (01, 02..20)
 -The code selects the edf file found in current folder and import eeg data & event info.
 -Correction of a data acquisition problem with event timing. 
-Output: 
+%Output: 
 1) 4 sets per participant containing 8 electrodes
    filename: 'part_01_1'..'part_01_8' 
 2) Merged sets (4 into 1) for each participant. Set files containing 32 channels, event info.
