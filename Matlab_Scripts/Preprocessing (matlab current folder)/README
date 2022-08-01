@@ -1,19 +1,37 @@
-Read me: AudreyPreprocessingReg explanation
-
-%%%%%Script to preprocess data for Visage experiments (JPE) 32 electrodes cap (-po10).
-
-% Input: Raw eeg data *.edf (eeg continuous)
-% Output: *.erp, (event related potentials) *.set files, *txt (Preprocessed, pruned
-% with ICA, 0.1hz-50hz filtering, AR...) 
+%%%%%READ ME FOR AudreyPreprocessingReg. Script to preprocess data for Visage experiments (JPE) 32 electrodes cap (-po10) Mixed 5 conditions, paires of participants.
 % 
-%IMPORTANT
-% 1)SCRIPT NEEDS TO BE IN 'OUTPUT' folder in current folder. But run script from cd!!.
-% 2) Run section per section (in Editor > Run and Advance NOT 'RUN')
-% 3) Need to remove bad electrodes to run AR. 
-% 4) Automatic channel rejection runs twice per participant. The first will
-% not pop up (check for bad channels in command window). The second time
-% will (choose: Measure 'probability')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Input: Raw eeg data *.EDF (eeg continuous) containing data for a paire of
+% participants (H1&H2) recorded simultaneously (H1: first 32 channels of
+% file; H2: last 32 channels). 
+%
+%%%% Output: *.erp, (event related potentials) *.set files (Preprocessed, pruned
+% with ICA, 0.1hz-50hz filtering, AR...), , *txt (Artifact Rejection
+% summary) for H1 & H2
+% 
+%!! IMPORTANT READ BEFORE RUNNING !!!
+% 
+% 1) Run section per section (in Editor > Run and Advance not 'Run')
+% 2) This script requires some manual input
+%       a) Pop-up version of ICA (Check that correct channels are selected
+%       i.e that *bad* channels are not included) for H1 and H2
+%       b) Pop-up version of Automatic Channel Rejection: change measure
+%       from Kurtosis to Probability. 
+%       c) Channels that were rejected during the Automatic Rejection AFTER ICA
+%          should be written down.
+% 3) Artifact Rejection QUICK guide (Last section, after ICA)
+%       a) Run Artifact Rejection once on all 28 electrodes. 
+%       b) Run Artifact a second time removing channels with lots of artifacts
+%          (See in Artifact rejection pop-up, channels that cause a lot of
+%          trials to be rejected.) Should coincide with channels marked
+%          *bad* by automatic channel rejection. 
+%       c)Take note of bad channels. Double check which channels are bad by
+%       plotting ERPs before recalculating bad channels.
+%%structure
+% 4) In current folder create a folder named "output". Output files will
+% be created there. 
+% 5) Input .EDF filename format: 1:2 characters = pair number (01, 02...)
+%      
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 WHAT IS HAPPENING IN THE CODE? 
 Table of contents
