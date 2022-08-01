@@ -1,20 +1,39 @@
-%Version4
+%Version5
 %%%%%Script to preprocess data for Visage experiments (JPE) 32 electrodes cap (-po10).
 
 % !READ ME!
-% Input: Raw eeg data *.edf (eeg continuous)
-% Output: *.erp, (event related potentials) *.set files [0.1hz_...set], *txt (Preprocessed, pruned
-% with ICA, 0.1hz-50hz filtering, AR...) 
+% Input: Raw eeg data *.EDF (eeg continuous) containing data for a paire of
+% participants (H1&H2) recorded simultaneously (H1: first 32 channels of
+% file; H2: last 32 channels). 
+%
+% Output: *.erp, (event related potentials) *.set files (Preprocessed, pruned
+% with ICA, 0.1hz-50hz filtering, AR...), , *txt (Artifact Rejection
+% summary) for H1 & H2
 % 
-%IMPORTANT
-% 1)SCRIPT NEEDS TO BE IN 'OUTPUT' folder in current folder. But run script from cd!!.
-% 2) Run section per section (in Editor > Run and Advance NOT 'RUN')
-% 3) Need to remove bad electrodes to run AR. 
-% 4) Automatic channel rejection runs twice per participant. The first will
-% not pop up (check for bad channels in command window). The second time
-% will (choose: Measure 'probability')
+%!! IMPORTANT READ BEFORE RUNNING !!!
+% 
+% 1) Run section per section (in Editor > Run and Advance not 'Run')
+% 2) This script requires some manual input
+%       a) Pop-up version of ICA (Check that correct channels are selected
+%       i.e that *bad* channels are not included) for H1 and H2
+%       b) Pop-up version of Automatic Channel Rejection: change measure
+%       from Kurtosis to Probability. 
+%       c) Channels that were rejected during the Automatic Rejection AFTER ICA
+%          should be written down.
+% 3) Artifact Rejection QUICK guide (Last section, after ICA)
+%       a) Run Artifact Rejection once on all 28 electrodes. 
+%       b) Run Artifact a second time removing channels with lots of artifacts
+%          (See in Artifact rejection pop-up, channels that cause a lot of
+%          trials to be rejected.) Should coincide with channels marked
+%          *bad* by automatic channel rejection. 
+%       c)Take note of bad channels. Double check which channels are bad by
+%       plotting ERPs before recalculating bad channels.
+% 4) In current folder create a folder named "output". Output files will
+% be created there. 
+% 5) Input .EDF filename format: 1:2 characters = pair number (01, 02...)
+%      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
+%% SECTION 1: from .EDF to filtered .set files for H1&H2 (paire of participants)
 clear all
 close all
 clc
@@ -32,7 +51,7 @@ addpath( asciiFileDirectory );
 searchString = [asciiFileDirectory, '/', searchFilter];
 filesList = dir(searchString);
 
-% Boucle pour lire tout .edf
+% Read .edf
 for i=1:length(filesList)
     file_name(i)= fopen(filesList(i).name);% lire le fichier
 end
@@ -83,19 +102,21 @@ for j=1:8
     end
     
     EEG = pop_eegchanoperator(EEG, placingelectrode);
-    nameerp = [name_temp(1:2) 'b' int2str(j)];
-    EEG = pop_saveset( EEG, ['0.1HZ_' nameerp '.'] , [pwd '/output']);
+    nameerp = [name_temp(1:2) '_' int2str(j)];
+    EEG = pop_saveset( EEG, ['part_' nameerp '.'] , [pwd '/output']);
     
 end
 
-% merge datasets (use of function merge_eeg_sets in 'output' folder. If bug here: check function name, check path in function
+% merge datasets (function merge_eeg_sets)
 name_temp = filesList(i).name;
 nameH1 = ['1_' name_temp(1:2) 'H1.'];
 nameH2 = ['1_' name_temp(1:2) 'H2.'];
 
-merge_eeg_sets(['0.1HZ_' name_temp(1:2) 'b1.set'], ['0.1HZ_' name_temp(1:2) 'b2.set'], ['0.1HZ_' name_temp(1:2) 'b3.set'], ['0.1HZ_' name_temp(1:2) 'b4.set'], nameH1);
-merge_eeg_sets(['0.1HZ_' name_temp(1:2) 'b5.set'], ['0.1HZ_' name_temp(1:2) 'b6.set'], ['0.1HZ_' name_temp(1:2) 'b7.set'], ['0.1HZ_' name_temp(1:2) 'b8.set'], nameH2);
+merge_eeg_sets(['part_' name_temp(1:2) '_1.set'], ['part_' name_temp(1:2) '_2.set'], ['part_' name_temp(1:2) '_3.set'], ['part_' name_temp(1:2) '_4.set'], nameH1);
+merge_eeg_sets(['part_' name_temp(1:2) '_5.set'], ['part_' name_temp(1:2) '_6.set'], ['part_' name_temp(1:2) '_7.set'], ['part_' name_temp(1:2) '_8.set'], nameH2);
 
+%Create 2 filtered set files for each subject: one with 1hz filter to run
+%ICA on and 0.1hz filter to apply ICA on.  
 
 for h=1:2
     
@@ -170,10 +191,9 @@ for h=1:2
     end
 end
 
-
 %% SECTION FOR PARTICIPANT H1 (ICA, Artifact rejection...)
 
-j=1;
+j=1; %human 1
 
 %initializing variables
 nameerp = [];
@@ -210,7 +230,7 @@ EEG.icaweights = TMP.icaweights;
 EEG.icachansind = TMP.icachansind;
 clear TMP;
 EEG = pop_saveset(EEG, 'filename',['ICA_0.1HZ_' name_temp(1:2) '_H' int2str(j) '.set'], 'filepath', [pwd '/output']); %save 0.1hz+ICA matrix .set
-
+%0.1hz set is the one kept for further processing
 %% !!! when 'reject component' window pops up, before rejecting need to label components manually (precaution)
 EEG = pop_loadset('filename', ['ICA_0.1HZ_' name_temp(1:2) '_H' int2str(j) '.set'], 'filepath', [pwd '/output']);
 %IC component rejection
@@ -255,7 +275,7 @@ ERP = pop_savemyerp(ERP, 'erpname', nameerp, 'filename', nameerp, 'filepath', [p
 ERP = pop_summary_AR_erp_detection(ERP, [currentDirectory '/output' '\' nameerp(1:end-4) '.txt'])
 
 
-fprintf(':) Participant 1 done :)');
+fprintf(':) Participant 1 done. Last files created are final output :)');
 
 %% SECTION FOR PARTICIPANT H2 (ICA, Artifact rejection...)
 
