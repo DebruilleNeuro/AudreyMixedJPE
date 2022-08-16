@@ -1,4 +1,4 @@
-%Version5
+%Version6
 %%%%%Script to preprocess data for Visage experiments (JPE) 32 electrodes cap (-po10).
 
 % !READ ME!
@@ -201,8 +201,8 @@ nameset = [];
 electrodes=[];
 
 EEG = pop_loadset('filename',['1HZ_' name_temp(1:2) '_H' int2str(j) '.set'],'filepath',[pwd '/output']); %load 1hz dataset for ICA
-nameerp = [name_temp(1:2) '_H' int2str(j) '.erp'];
-nameset = [name_temp(1:2) '_H' int2str(j) '.set'];
+nameerp = [name_temp(1:2) '_MH' int2str(j) '.erp'];
+nameset = [name_temp(1:2) '_MH' int2str(j) '.set'];
 EEG = pop_editset(EEG, 'run', [], 'chanlocs', [pwd '/Cap30electrodes.ced']);%load channel location info
 
 % automatic channel rejection
